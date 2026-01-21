@@ -62,28 +62,37 @@ jobs:
           path: build
           retention-days: 90
 
-      # Discord 알림
-      - name: Notify Discord - CI Result
-        if: always()
+
+      - name: Notify Discord - CI Success
+        if: success()
         uses: tsickert/discord-webhook@v5.3.0
         with:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
           username: "Frontend CI Bot"
-          avatar-url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-          embed-title: ${{ success() && '✅ Frontend CI 성공' || '❌ Frontend CI 실패' }}
+          embed-title: "✅ Frontend CI 성공"
           embed-description: |
             **이벤트:** ${{ github.event_name }}
-            **브랜치:** `${{ github.ref_name }}
-            **작성자:** ${{ github.event.pull_request.user.login }}
+            **브랜치:** `${{ github.ref_name }}`
+            **실행자:** ${{ github.actor }}
 
-            **CI 결과:**
             • Install: ${{ steps.install.outcome }}
             • ESLint: ${{ steps.lint.outcome }}
             • Build: ${{ steps.build.outcome }}
             • Tests: ${{ steps.tests.outcome }}
-
-            [CI 로그](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
             
-          embed-url: ${{ github.event.pull_request.html_url }}
-          embed-color: ${{ success() && '3066993' || '15158332' }}
-          embed-timestamp: ${{ github.event.pull_request.updated_at }}
+      - name: Notify Discord - CI Failure
+        if: failure()
+        uses: tsickert/discord-webhook@v5.3.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          username: "Frontend CI Bot"
+          embed-title: "❌ Frontend CI 실패"
+          embed-description: |
+            **이벤트:** ${{ github.event_name }}
+            **브랜치:** `${{ github.ref_name }}`
+            **실행자:** ${{ github.actor }}
+
+            • Install: ${{ steps.install.outcome }}
+            • ESLint: ${{ steps.lint.outcome }}
+            • Build: ${{ steps.build.outcome }}
+            • Tests: ${{ steps.tests.outcome }}
