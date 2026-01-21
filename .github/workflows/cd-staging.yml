@@ -25,7 +25,7 @@ jobs:
           path: ./build
           run-id: ${{ github.event.workflow_run.id }}
 
-		  # 2. 서버 업로드
+      # 2. 서버 업로드
       - name: Upload files
         uses: appleboy/scp-action@v0.1.4
         with:
