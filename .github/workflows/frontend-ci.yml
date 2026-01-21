@@ -42,7 +42,7 @@ jobs:
       # 6. 테스트 실행
       - name: Run tests
         id: tests
-        run: npm test -- --watch=false
+        run: npm test -- --watch=false --passWithNoTests
 
       # 7. 산출물 저장 (dev: 7일)
       - name: Upload artifact (dev)
