@@ -18,7 +18,7 @@ const ClosetDetailPage = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showActionSheet, setShowActionSheet] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [setIsDeleting] = useState(false);
 
   // 옷 데이터 로드
   useEffect(() => {

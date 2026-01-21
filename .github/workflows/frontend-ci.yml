@@ -1,0 +1,98 @@
+name: Frontend CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [dev, main]
+
+  push:
+    branches: [dev, main]
+
+jobs:
+  frontend-ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 소스 코드 체크아웃
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      # 2. 실행 환경 설정 (Node.js)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # 3. 의존성 설치
+      - name: Install dependencies
+        id: install
+        run: npm ci
+
+      # 4. 정적 분석 (Lint)
+      - name: Run lint
+        id: lint
+        run: npm run lint
+
+      # 5. 빌드 검증
+      - name: Build project
+        id: build
+        run: npm run build
+
+      # 6. 테스트 실행
+      - name: Run tests
+        id: tests
+        run: npm test -- --watch=false --passWithNoTests
+
+      # 7. 산출물 저장 (dev: 7일)
+      - name: Upload artifact (dev)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build-dev
+          path: build
+          retention-days: 7
+
+      # 8. 산출물 저장 (main: 90일)
+      - name: Upload artifact (main)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build-main
+          path: build
+          retention-days: 90
+
+
+      - name: Notify Discord - CI Success
+        if: success()
+        uses: tsickert/discord-webhook@v5.3.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          username: "Frontend CI Bot"
+          embed-title: "✅ Frontend CI 성공"
+          embed-description: |
+            **이벤트:** ${{ github.event_name }}
+            **브랜치:** `${{ github.ref_name }}`
+            **실행자:** ${{ github.actor }}
+
+            • Install: ${{ steps.install.outcome }}
+            • ESLint: ${{ steps.lint.outcome }}
+            • Build: ${{ steps.build.outcome }}
+            • Tests: ${{ steps.tests.outcome }}
+            
+      - name: Notify Discord - CI Failure
+        if: failure()
+        uses: tsickert/discord-webhook@v5.3.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          username: "Frontend CI Bot"
+          embed-title: "❌ Frontend CI 실패"
+          embed-description: |
+            **이벤트:** ${{ github.event_name }}
+            **브랜치:** `${{ github.ref_name }}`
+            **실행자:** ${{ github.actor }}
+
+            • Install: ${{ steps.install.outcome }}
+            • ESLint: ${{ steps.lint.outcome }}
+            • Build: ${{ steps.build.outcome }}
+            • Tests: ${{ steps.tests.outcome }}
