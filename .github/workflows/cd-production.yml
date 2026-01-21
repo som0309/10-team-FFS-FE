@@ -1,9 +1,5 @@
 name: CD - Production
 
-permissions:
-  actions: read
-  contents: read
-
 on:
   workflow_run:
     workflows: ["Frontend CI"]
